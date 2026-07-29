@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageEnhance
 from io import BytesIO
 from fastapi import FastAPI, Request
 import os
@@ -77,6 +77,65 @@ async def analyze(request: Request):
 
 
     except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+@app.post("/animate")
+async def animate(request: Request):
+    try:
+        data = await request.body()
+
+        image_data = base64.b64decode(data)
+
+        image = Image.open(BytesIO(image_data)).convert("RGBA")
+
+        frames = []
+
+        # 6 animation frames
+        for i in range(6):
+
+            frame = image.copy()
+
+            # zoom effect
+            if i % 2 == 0:
+                frame = frame.resize(
+                    (frame.width + 10, frame.height + 10)
+                )
+
+            # brightness effect
+            enhancer = ImageEnhance.Brightness(frame)
+            frame = enhancer.enhance(1 + (i * 0.03))
+
+            frames.append(frame)
+
+
+        filename = f"{uuid.uuid4()}.gif"
+
+        filepath = os.path.join(
+            "uploads",
+            filename
+        )
+
+
+        frames[0].save(
+            filepath,
+            save_all=True,
+            append_images=frames[1:],
+            duration=300,
+            loop=0
+        )
+
+
+        return {
+            "status": "success",
+            "message": "Animation created",
+            "filename": filename
+        }
+
+
+    except Exception as e:
+
         return {
             "status": "error",
             "message": str(e)
