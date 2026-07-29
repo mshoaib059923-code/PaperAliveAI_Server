@@ -8,13 +8,6 @@ import base64
 import uuid
 
 app = FastAPI()
-model = models.resnet50(weights="DEFAULT")
-model.eval()
-
-transform = transforms.Compose([
-    transforms.Resize((224,224)),
-    transforms.ToTensor(),
-])
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
