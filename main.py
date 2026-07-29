@@ -35,17 +35,46 @@ async def analyze(request: Request):
 
         image = Image.open(BytesIO(image_data))
 
-        width, height = image.size
+        # Image processing
+        gray = image.convert("L")
 
-        # Basic AI preparation
-        result = recognize_drawing(width, height)
+        width, height = gray.size
+
+        pixels = list(gray.getdata())
+
+        dark_pixels = 0
+
+        for p in pixels:
+            if p < 150:
+                dark_pixels += 1
+
+        total_pixels = len(pixels)
+
+        drawing_ratio = dark_pixels / total_pixels
+
+
+        # Simple recognition
+        if drawing_ratio < 0.05:
+            result = "Very light drawing"
+
+        elif drawing_ratio < 0.20:
+            result = "Possible Bird or Character Drawing"
+
+        elif drawing_ratio < 0.40:
+            result = "Possible Animal/Object Drawing"
+
+        else:
+            result = "Heavy Drawing Detected"
+
 
         return {
             "status": "success",
-            "message": "Image analyzed",
-            "image_size": f"{width}x{height}",
+            "message": "Image processed",
+            "size": f"{width}x{height}",
+            "drawing_ratio": round(drawing_ratio, 2),
             "AI_result": result
         }
+
 
     except Exception as e:
         return {
