@@ -1,11 +1,11 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, Request
 import os
-import shutil
+import base64
+import uuid
 
 app = FastAPI()
 
 UPLOAD_FOLDER = "uploads"
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.get("/")
@@ -15,12 +15,26 @@ def home():
         "message": "Naaz Paper Alive AI Server Running"
     }
 
-from fastapi import Request
-
 @app.post("/upload")
 async def upload(request: Request):
-    form = await request.form()
+    try:
+        data = await request.body()
 
-    return {
-        "fields": list(form.keys())
-    }
+        image_data = base64.b64decode(data)
+
+        filename = f"{uuid.uuid4()}.png"
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+        with open(filepath, "wb") as f:
+            f.write(image_data)
+
+        return {
+            "status": "success",
+            "filename": filename
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
