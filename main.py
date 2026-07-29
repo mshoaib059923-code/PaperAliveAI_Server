@@ -19,6 +19,13 @@ def home():
     }
 
 
+def recognize_drawing(width, height):
+    if width > height:
+        return "Possible Animal or Object Drawing"
+    elif height > width:
+        return "Possible Bird or Character Drawing"
+    else:
+        return "Possible Face or Round Object Drawing"
 @app.post("/analyze")
 async def analyze(request: Request):
     try:
@@ -31,7 +38,7 @@ async def analyze(request: Request):
         width, height = image.size
 
         # Basic AI preparation
-        result = "Drawing detected"
+        result = recognize_drawing(width, height)
 
         return {
             "status": "success",
