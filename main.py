@@ -1,7 +1,5 @@
 from PIL import Image
 from io import BytesIO
-from PIL import Image
-from io import BytesIO
 from fastapi import FastAPI, Request
 import os
 import base64
@@ -12,6 +10,7 @@ app = FastAPI()
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.get("/")
 def home():
     return {
@@ -19,29 +18,7 @@ def home():
         "message": "Naaz Paper Alive AI Server Running"
     }
 
-@app.post("/upload")
-async def upload(request: Request):
-    try:
-        data = await request.body()
 
-        image_data = base64.b64decode(data)
-
-        filename = f"{uuid.uuid4()}.png"
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-
-        with open(filepath, "wb") as f:
-            f.write(image_data)
-
-        return {
-            "status": "success",
-            "filename": filename
-        }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
 @app.post("/analyze")
 async def analyze(request: Request):
     try:
@@ -53,11 +30,14 @@ async def analyze(request: Request):
 
         width, height = image.size
 
+        # Basic AI preparation
+        result = "Drawing detected"
+
         return {
             "status": "success",
-            "message": "Image received for AI analysis",
-            "width": width,
-            "height": height
+            "message": "Image analyzed",
+            "image_size": f"{width}x{height}",
+            "AI_result": result
         }
 
     except Exception as e:
