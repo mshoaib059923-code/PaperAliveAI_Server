@@ -15,14 +15,12 @@ def home():
         "message": "Naaz Paper Alive AI Server Running"
     }
 
-@app.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+from fastapi import Request
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+@app.post("/upload")
+async def upload(request: Request):
+    form = await request.form()
 
     return {
-        "status": "success",
-        "filename": file.filename
+        "fields": list(form.keys())
     }
