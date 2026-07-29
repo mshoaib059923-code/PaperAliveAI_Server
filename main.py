@@ -1,5 +1,3 @@
-import torch
-from torchvision import models, transforms
 from PIL import Image
 from io import BytesIO
 from PIL import Image
