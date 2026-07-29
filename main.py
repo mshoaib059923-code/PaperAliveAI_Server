@@ -4,9 +4,10 @@ from fastapi import FastAPI, Request
 import os
 import base64
 import uuid
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
