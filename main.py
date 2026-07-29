@@ -1,3 +1,5 @@
+from PIL import Image
+from io import BytesIO
 from fastapi import FastAPI, Request
 import os
 import base64
@@ -31,6 +33,29 @@ async def upload(request: Request):
         return {
             "status": "success",
             "filename": filename
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+@app.post("/analyze")
+async def analyze(request: Request):
+    try:
+        data = await request.body()
+
+        image_data = base64.b64decode(data)
+
+        image = Image.open(BytesIO(image_data))
+
+        width, height = image.size
+
+        return {
+            "status": "success",
+            "message": "Image received for AI analysis",
+            "width": width,
+            "height": height
         }
 
     except Exception as e:
