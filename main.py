@@ -128,11 +128,7 @@ async def animate(request: Request):
         )
 
 
-        return {
-            "status": "success",
-            "message": "Animation created",
-            "filename": filename
-        }
+      return filename
 
 
     except Exception as e:
