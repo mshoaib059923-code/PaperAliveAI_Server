@@ -1,16 +1,19 @@
-from PIL import Image, ImageEnhance
-from io import BytesIO
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-import os
+from fastapi.responses import PlainTextResponse
+from PIL import Image, ImageEnhance
+from io import BytesIO
 import base64
 import uuid
+import os
 
 app = FastAPI()
 
+# Upload folder
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Serve uploaded files
 app.mount("/uploads", StaticFiles(directory=UPLOAD_FOLDER), name="uploads")
 
 
@@ -48,13 +51,13 @@ async def analyze(request: Request):
         drawing_ratio = dark_pixels / total_pixels
 
         if drawing_ratio < 0.05:
-            result = "Very light drawing"
+            result = "Very Light Drawing"
 
         elif drawing_ratio < 0.20:
             result = "Possible Bird or Character Drawing"
 
         elif drawing_ratio < 0.40:
-            result = "Possible Animal/Object Drawing"
+            result = "Possible Animal or Object Drawing"
 
         else:
             result = "Heavy Drawing Detected"
@@ -76,7 +79,9 @@ async def analyze(request: Request):
 
 @app.post("/animate")
 async def animate(request: Request):
+
     try:
+
         data = await request.body()
 
         image_data = base64.b64decode(data)
@@ -95,6 +100,7 @@ async def animate(request: Request):
                 )
 
             enhancer = ImageEnhance.Brightness(frame)
+
             frame = enhancer.enhance(1 + (i * 0.03))
 
             frames.append(frame)
@@ -110,14 +116,12 @@ async def animate(request: Request):
             filepath,
             save_all=True,
             append_images=frames[1:],
-            duration=300,
+            duration=250,
             loop=0
         )
 
-        return filename
+        return PlainTextResponse(filename)
 
     except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e)
-        }
+
+        return PlainTextResponse(str(e), status_code=500)
