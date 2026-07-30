@@ -1,15 +1,17 @@
 from PIL import Image, ImageEnhance
 from io import BytesIO
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 import os
 import base64
 import uuid
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_FOLDER), name="uploads")
 
 
 @app.get("/")
@@ -20,13 +22,6 @@ def home():
     }
 
 
-def recognize_drawing(width, height):
-    if width > height:
-        return "Possible Animal or Object Drawing"
-    elif height > width:
-        return "Possible Bird or Character Drawing"
-    else:
-        return "Possible Face or Round Object Drawing"
 @app.post("/analyze")
 async def analyze(request: Request):
     try:
@@ -36,7 +31,6 @@ async def analyze(request: Request):
 
         image = Image.open(BytesIO(image_data))
 
-        # Image processing
         gray = image.convert("L")
 
         width, height = gray.size
@@ -53,8 +47,6 @@ async def analyze(request: Request):
 
         drawing_ratio = dark_pixels / total_pixels
 
-
-        # Simple recognition
         if drawing_ratio < 0.05:
             result = "Very light drawing"
 
@@ -67,7 +59,6 @@ async def analyze(request: Request):
         else:
             result = "Heavy Drawing Detected"
 
-
         return {
             "status": "success",
             "message": "Image processed",
@@ -76,12 +67,13 @@ async def analyze(request: Request):
             "AI_result": result
         }
 
-
     except Exception as e:
         return {
             "status": "error",
             "message": str(e)
         }
+
+
 @app.post("/animate")
 async def animate(request: Request):
     try:
@@ -93,33 +85,28 @@ async def animate(request: Request):
 
         frames = []
 
-        # 6 animation frames
         for i in range(6):
 
             frame = image.copy()
 
-            # zoom effect
             if i % 2 == 0:
                 frame = frame.resize(
                     (frame.width + 10, frame.height + 10)
                 )
 
-            # brightness effect
             enhancer = ImageEnhance.Brightness(frame)
             frame = enhancer.enhance(1 + (i * 0.03))
 
             frames.append(frame)
 
-
         filename = f"{uuid.uuid4()}.gif"
 
         filepath = os.path.join(
-            "uploads",
+            UPLOAD_FOLDER,
             filename
         )
 
-
-             frames[0].save(
+        frames[0].save(
             filepath,
             save_all=True,
             append_images=frames[1:],
@@ -130,7 +117,6 @@ async def animate(request: Request):
         return filename
 
     except Exception as e:
-
         return {
             "status": "error",
             "message": str(e)
