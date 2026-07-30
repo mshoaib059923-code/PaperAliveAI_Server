@@ -119,7 +119,7 @@ async def animate(request: Request):
         )
 
 
-        frames[0].save(
+             frames[0].save(
             filepath,
             save_all=True,
             append_images=frames[1:],
@@ -127,9 +127,7 @@ async def animate(request: Request):
             loop=0
         )
 
-
-      return filename
-
+        return filename
 
     except Exception as e:
 
